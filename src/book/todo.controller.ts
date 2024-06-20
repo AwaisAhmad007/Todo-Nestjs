@@ -10,7 +10,6 @@ export class TodoController{
     
     @Put("/update")
     updateTodo(@Body() todo : Todo ) : string{
-        console.log('i changed some file');
         return this.TodoService.updateTodoService(todo);
     }
     
