@@ -5,13 +5,13 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import {Users} from "./data/user.entity";
 import { Tasks } from "./data/task.entity";
 import { usertask } from "./data/UserTask.entity";
-import { Position } from "./data/position.entity";
+import { State } from "./data/state.entity";
 
 @Module({
     imports : [TypeOrmModule.forFeature([Users]),
     TypeOrmModule.forFeature([Tasks]),
     TypeOrmModule.forFeature([usertask]),
-    TypeOrmModule.forFeature([Position])],
+    TypeOrmModule.forFeature([State])],
     
     controllers : [TodoController],
     providers : [TodoService],

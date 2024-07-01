@@ -1,120 +1,208 @@
 import { Injectable } from "@nestjs/common";
 import { Todo } from "./data/todo.dto";
-import { v4 as uuidv4 } from 'uuid';
 import { InjectRepository } from "@nestjs/typeorm";
 import { Tasks } from "./data/task.entity";
 import {Users} from "./data/user.entity";
-import {Position} from "./data/position.entity"
-
 import { Repository } from "typeorm";
+import { State } from "./data/state.entity";
 
 
 @Injectable()
 export class TodoService{
     public todos : Todo[] = [];
-    positionsRepository: any;
-
+  
     constructor(
         @InjectRepository(Tasks)
         private tasksRepository: Repository<Tasks>,
         @InjectRepository(Users)
         private usersRepository: Repository<Users>,
-        @InjectRepository(Position)
-        private positionRepository: Repository<Position>,
+        // @InjectRepository(State)
+        // private positionRepository: Repository<State>,
       ) {}
 
-      
     //add todo
-addTodoService( todo : Todo) : string{
-    todo.id = uuidv4();
-    this.todos.push(todo);
-    return "This todo is successfully added"
-}
+    async  addTodoService(todo: Todo){
+        const user = await this.usersRepository.findOneBy({id: todo.User_Id});
+        if(!user)
+            return {message: 'User not found',status: 404}
+        const add = this.tasksRepository.create(todo);
+ 
+        return await this.tasksRepository.save(add);
+    }
 
+// findOne(options: FindOneOptions<Entity>): Promise<Entity | null>;
 
+    async updateTodoService(taskId: number, todo: Todo) {
+        const toUpdate = await this.tasksRepository.findOneBy({Id: todo.id});
+    //
+        if(!toUpdate) return {message: 'Task does not exist', status:404}
+        const updated = Object.assign(toUpdate, todo);
 
-    //update todo
-updateTodoService(todo : Todo) : string{
-
-    //validate if the todo id exist in the body
-    if(!todo.id) return 'Please provide the id to update the todo' 
-
-    let index = this.todos.findIndex((currenttodo)=>{
-        return currenttodo.id == todo.id;
-    })
-   
-    //check if the todo exist
-    if(index===-1){
-        return 'Todo Not found';
-    }   
-    
-    this.todos[index] = todo;
-    return 'This todo is successfully added'
-}
+    // console.log("Updated todo", updated)
+        return await this.tasksRepository.save(updated);
+  }
 
     //delete todo
-    deleteTodoService(todoId : string) : string{
-        this.todos = this.todos.filter((todo)=>{
-            return todo.id != todoId;
+
+    async deleteTodoService(id: number) {
+      return await this.tasksRepository.delete(id);
+      }
+   
+    //Find all todos
+    async findAllTodoService() : Promise<Todo[]> {
+        const tasks = await this.tasksRepository.find({
+            relations:{
+                user:true,
+            }
         })
-        return "Todo has been deleted"
-    }
-    //findall todo
-    async findAllTodoService() : Promise<Todo[]>{
-
-        const tasks = await this.tasksRepository.find();
-        const users = await this.usersRepository.find();
-        const position = await this.positionRepository.find();
-
-        console.log('all users',users);
-        console.log('all tasks',tasks);
-        console.log('all positions',position);
-
-        const todos: Todo[] = [];
-        tasks.forEach((task, index) => {
-            // console.log(`task: ${index}`,task);
-            const user = users.find(el => el.id?.toString() === task.User_Id?.toString());
-
-            console.log("User I_d",user);
-
-            todos.push({
+        // console.log('all users',tasks);
+        return tasks.map(task =>  {          
+            return {          
+                id : task.Id,
+                User: task?.user?.U_Name,
                 Title: task.Title,
-                id: task.Id?.toString(),
-
-                User:user.U_Name?.toString(),
                 Narration: task.Narration,
-                StartDate: task.Created_Date?.toString(),
-                EndDate: task.End_Date?.toString(),
-                status: 'true'
+                StartDate: task.Created_Date,
+                EndDate: task.End_Date,
+                User_Id: task.User_Id,
+                State  : task.State,
+            }      
+        });  
+    }
+     
+    // get all completerd todos
 
-            })
+    // async completedtasks() : Promise<Todo[]> {
+    //     const tasks = await this.tasksRepository.find({
+    //         relations:{
+    //             user:true,
+    //         }
+    //     })
+    //     const filteredTasks = tasks?.filter((item)=>item.State === true)
+    //     // console.log('complete tasks',filteredTasks);
+    //     if(filteredTasks?.length === 0 ){
+    //         return []
+    //     }
+    //     return filteredTasks.map(task =>  {          
+    //         return {          
+    //             id : task.Id,
+    //             User: task?.user?.U_Name,
+    //             Title: task.Title,
+    //             Narration: task.Narration,
+    //             StartDate: task.Created_Date,
+    //             EndDate: task.End_Date,
+    //             User_Id: task.User_Id,
+    //             State  : task.State,
+    //         }      
+    //     });  
+    // }
+    async completedtasks()  {
+        const tasks = await this.tasksRepository.find({
+            relations:{
+                user:true,
+            },
+            where: {
+                State: true,
+            } 
         })
-        return todos;
+        // console.log(tasks);
+        return tasks;
     }
 
+    // get todo by id
 
+    async findbyid(id: number){
+        const tasks = await this.tasksRepository.find({
+            relations:{
+                user:true,
+            },
+            where:{
+            User_Id:id
+        },
+    })
 
-    
-
-    //get todo by Id
-    findTodoById(id : string): Todo|string{
-        const todo = this.todos.find(t=> t.id ===id);
+    //  console.log("id",tasks)
+     return tasks;
+}
+        // return tasks?.map((task)=>{
+    //         return {
+                // id : task.Id,
+    //                         User: task?.user?.U_Name,
+    //                         Title: task.Title,
+    //                         Narration: task.Narration,
+    //                         StartDate: task.Created_Date,
+    //                         EndDate: task.End_Date,
+    //                         User_Id: task.User_Id,
+    //                         State  : task.State,
+    //         }
+    //     })
+    //   }
+    // findTodoById(id : string): Todo|string{
+    //     const todo = this.tasksRepository.find({id =Tasks.id});
         
-        if(!todo){
-            return 'Todo Not found';
-        }
-        return todo;
-    }
-
+        // if(!todo){
+        //     return 'Todo Not found';
+        // }
+    //     return todo;
+    // }
     
    // get todo by author
-   findTodoByAuthor(author : string): Todo|string{
-    const todo = this.todos.find(t=> t.Author ===author);
-    
-    if(!todo){
-        return 'Todo Not found';
-    }
-    return todo;
+   async findbyUser(user: string){
+    const users = await this.usersRepository.find({
+        relations:{
+            task:true,
+        },
+        where:{
+        U_Name:user
+    },
+  })
+     return users
+ }
 }
+// return users?.map((user)=>{
+//     const tasks = user?.task.map((task)=>{
+//         return {
+//             id:task?.Id,
+//             Title: task?.Title,
+//                         Narration: task?.Narration,
+//                         StartDate: task?.Created_Date,
+//                         EndDate: task?.End_Date,
+//                         State  : task.State,
 
-}
+//         }
+//     })
+
+//     return {
+//         id : user.id,
+//         User: user?.U_Name,
+//         tasks:tasks
+//     }
+// })
+//    }}
+//         // return {
+        //     task:user.task
+        //     id : user.id,
+        //                 User: user?.U_Name,
+        //                 Title: user.task.Title,
+        //                 Narration: task.Narration,
+        //                 StartDate: task.Created_Date,
+        //                 EndDate: task.End_Date,
+        //                 User_Id: task.User_Id,
+        //                 State  : task.State,
+        // }
+//    }})
+//   }
+//    async findbyUser(user: string): Promise<Users> {
+//     return await this.usersRepository.findOneBy({U_Name: user});
+//   }
+
+//    findTodoByAuthor(author : string): Todo|string{
+//     const todo = this.todos.find(t=> t.Author ===author);
+    
+//     if(!todo){
+//         return 'Todo Not found';
+//     }
+//     return todo;
+// }
+
+// }
