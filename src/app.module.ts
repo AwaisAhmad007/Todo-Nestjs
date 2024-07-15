@@ -5,7 +5,6 @@ import { Users } from './book/data/user.entity';
 import { Tasks } from './book/data/task.entity';
 import { usertask } from './book/data/UserTask.entity';
 import { DataSource } from 'typeorm';
-import { State } from './book/data/state.entity';
 
 
 @Module({
@@ -17,7 +16,7 @@ import { State } from './book/data/state.entity';
       username: 'root', 
       password: '123abc!!',
       database: 'todo',
-      entities: [Users,Tasks,State,usertask],
+      entities: [Users,Tasks,usertask],
       autoLoadEntities: true,
     }),
   ],
