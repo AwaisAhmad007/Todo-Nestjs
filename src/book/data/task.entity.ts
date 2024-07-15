@@ -1,5 +1,5 @@
-import {Column, Entity, PrimaryGeneratedColumn, Timestamp } from "typeorm";
-
+import {Column, Entity, JoinColumn, ManyToOne,  PrimaryGeneratedColumn} from "typeorm";
+import { Users } from "./user.entity";
 
 
 @Entity()
@@ -14,22 +14,20 @@ Title:string;
 @Column()
 Narration:string;
 
-@Column({
-    nullable: true,
-
-})
-Created_Date!:Date;
-
-@Column({
-
- nullable:true,
-})
-End_Date!:Date;
+@Column()
+Created_Date:Date;
 
 @Column()
+End_Date:Date;
+
+@Column()
+State: Boolean;
+
+@Column({ name : 'User_Id'})
 User_Id:number;
 
-@Column()
-Task_Id:number;
+@ManyToOne(() => Users, (Users) => Users.task)
+@JoinColumn ({name : 'User_Id'})
+user: Users
 
 }

@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Tasks } from "./task.entity";
 
 
 
@@ -6,13 +7,14 @@ import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 @Entity()
 export class Users{
     @PrimaryGeneratedColumn()
-    id:string
+    id:number
 
     @Column()
     U_Name:string
 
-    @Column({ default: true })
-    State: boolean;
+    
+    @OneToMany(() => Tasks, (Tasks) => Tasks.user)
+    task: Tasks[];
 }
 
  
