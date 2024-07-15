@@ -4,8 +4,6 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Tasks } from "./data/task.entity";
 import {Users} from "./data/user.entity";
 import { Repository } from "typeorm";
-import { State } from "./data/state.entity";
-
 
 @Injectable()
 export class TodoService{
@@ -16,8 +14,6 @@ export class TodoService{
         private tasksRepository: Repository<Tasks>,
         @InjectRepository(Users)
         private usersRepository: Repository<Users>,
-        // @InjectRepository(State)
-        // private positionRepository: Repository<State>,
       ) {}
 
     //add todo
@@ -45,7 +41,20 @@ export class TodoService{
     //delete todo
 
     async deleteTodoService(id: number) {
-      return await this.tasksRepository.delete(id);
+        const deleted = await this.tasksRepository.delete(id);
+        if(deleted?.affected !== 0){
+            return {
+                data:{
+                    message:'Deleted Successfully!'
+                }
+            }
+        }else{
+            return {
+                error:{
+                    message:'No record found.'
+                }
+            }
+        }
       }
    
     //Find all todos
@@ -70,32 +79,6 @@ export class TodoService{
         });  
     }
      
-    // get all completerd todos
-
-    // async completedtasks() : Promise<Todo[]> {
-    //     const tasks = await this.tasksRepository.find({
-    //         relations:{
-    //             user:true,
-    //         }
-    //     })
-    //     const filteredTasks = tasks?.filter((item)=>item.State === true)
-    //     // console.log('complete tasks',filteredTasks);
-    //     if(filteredTasks?.length === 0 ){
-    //         return []
-    //     }
-    //     return filteredTasks.map(task =>  {          
-    //         return {          
-    //             id : task.Id,
-    //             User: task?.user?.U_Name,
-    //             Title: task.Title,
-    //             Narration: task.Narration,
-    //             StartDate: task.Created_Date,
-    //             EndDate: task.End_Date,
-    //             User_Id: task.User_Id,
-    //             State  : task.State,
-    //         }      
-    //     });  
-    // }
     async completedtasks()  {
         const tasks = await this.tasksRepository.find({
             relations:{
@@ -120,31 +103,22 @@ export class TodoService{
             User_Id:id
         },
     })
-
-    //  console.log("id",tasks)
      return tasks;
 }
-        // return tasks?.map((task)=>{
-    //         return {
-                // id : task.Id,
-    //                         User: task?.user?.U_Name,
-    //                         Title: task.Title,
-    //                         Narration: task.Narration,
-    //                         StartDate: task.Created_Date,
-    //                         EndDate: task.End_Date,
-    //                         User_Id: task.User_Id,
-    //                         State  : task.State,
-    //         }
-    //     })
-    //   }
-    // findTodoById(id : string): Todo|string{
-    //     const todo = this.tasksRepository.find({id =Tasks.id});
-        
-        // if(!todo){
-        //     return 'Todo Not found';
-        // }
-    //     return todo;
-    // }
+
+
+    //get one task by taskid
+    async findonetask(Id: number){
+        const tasks = await this.tasksRepository.findOne({
+            relations:{
+                user:true,
+            },
+            where:{
+            Id:Id
+        },
+    })
+     return tasks;
+}
     
    // get todo by author
    async findbyUser(user: string){
@@ -159,50 +133,3 @@ export class TodoService{
      return users
  }
 }
-// return users?.map((user)=>{
-//     const tasks = user?.task.map((task)=>{
-//         return {
-//             id:task?.Id,
-//             Title: task?.Title,
-//                         Narration: task?.Narration,
-//                         StartDate: task?.Created_Date,
-//                         EndDate: task?.End_Date,
-//                         State  : task.State,
-
-//         }
-//     })
-
-//     return {
-//         id : user.id,
-//         User: user?.U_Name,
-//         tasks:tasks
-//     }
-// })
-//    }}
-//         // return {
-        //     task:user.task
-        //     id : user.id,
-        //                 User: user?.U_Name,
-        //                 Title: user.task.Title,
-        //                 Narration: task.Narration,
-        //                 StartDate: task.Created_Date,
-        //                 EndDate: task.End_Date,
-        //                 User_Id: task.User_Id,
-        //                 State  : task.State,
-        // }
-//    }})
-//   }
-//    async findbyUser(user: string): Promise<Users> {
-//     return await this.usersRepository.findOneBy({U_Name: user});
-//   }
-
-//    findTodoByAuthor(author : string): Todo|string{
-//     const todo = this.todos.find(t=> t.Author ===author);
-    
-//     if(!todo){
-//         return 'Todo Not found';
-//     }
-//     return todo;
-// }
-
-// }

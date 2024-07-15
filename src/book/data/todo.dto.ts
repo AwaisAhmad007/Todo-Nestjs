@@ -2,7 +2,7 @@ import { Timestamp } from "typeorm";
 
 export interface Todo{
 
-    id          : string;
+    id          : number;
     User        : string;
     Title       : string;
     Narration   : string;

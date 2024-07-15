@@ -6,7 +6,7 @@ import { Users } from "./user.entity";
 export class Tasks{
 
 @PrimaryGeneratedColumn()
-Id:string;
+Id:number;
 
 @Column()
 Title:string;
